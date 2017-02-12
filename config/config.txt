@@ -1,0 +1,15 @@
+#number of nodes
+5
+#array of Ids of length = n
+["1","2","3","4","5"]
+#weight[n,n] matrix
+-1,3,8,3,-1
+3,-1,-1,1,4
+8,-1,-1,2,-1
+3,1,2,-1,2
+-1,4,-1,2,-1
+#id of leader
+1
+
+
+
