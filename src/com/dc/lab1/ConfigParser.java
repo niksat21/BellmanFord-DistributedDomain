@@ -86,9 +86,10 @@ public class ConfigParser {
 
         leader = line.trim();
 
-
+        line= getNextLine(iterator);
         for (int i = 0; i < noOfNodes && iterator.hasNext(); line = getNextLine(iterator)) {
             // Ignore comments
+
             if (line.startsWith("#") || line.isEmpty())
                 continue;
 
@@ -138,6 +139,9 @@ public class ConfigParser {
             System.out.println("size of nbr: " + ed.size());
             for (int z = 0; z < ed.size(); z++)
                 System.out.println(ed.get(z));
+
+            System.out.println(config2.getNodeLocs().get(0).getHostName());
+            System.out.println(config2.getNodeLocs().get(4).getPort());
             System.out.println("Done");
         } catch (IOException e) {
             logger.error(e);
