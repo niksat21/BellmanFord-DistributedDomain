@@ -1,12 +1,11 @@
 package com.dc.lab1;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by niksat21 on 2/12/2017.
@@ -14,7 +13,7 @@ import java.util.*;
 
 public class ConfigParser {
 
-    private static Logger logger = LogManager.getLogger(ConfigParser.class);
+    private static Logger logger = Logger.getLogger(ConfigParser.class.getName());
     private String fileLocation = System.getProperty("config", "conf/config.txt");
     private Config config;
 
@@ -144,7 +143,7 @@ public class ConfigParser {
             System.out.println(config2.getNodeLocs().get(4).getPort());
             System.out.println("Done");
         } catch (IOException e) {
-            logger.error(e);
+            logger.log(Level.SEVERE, e.getMessage());;
         }
     }
 
