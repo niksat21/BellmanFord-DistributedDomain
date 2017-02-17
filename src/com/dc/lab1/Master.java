@@ -16,7 +16,14 @@ public class Master {
 
     private static Integer nodeId;
     private static Logger logger = LogManager.getLogger(Master.class);
-    public static void main(String[] args){
+    public Boolean isDone=false;
+    public static void main(String[] args) {
+
+        Master master = new Master();
+        master.masterWorker();
+    }
+
+    public void masterWorker(){
 
         try{
 
@@ -49,7 +56,7 @@ public class Master {
             for(int i=0;i<config.getNoOfNodes();i++){
 
                 blockingQueueList.add(new ArrayBlockingQueue<Message>(1));
-                Client client  = new Client(config.getNodes().get(i).getNodeID(),
+                Client client  = new Client(config,config.getNodes().get(i).getNodeID(),
                         config.getLeader(),config.getNodes().get(i).getEdgesToNbrs(),
                         blockingQueueList.get(i),takingQueue);
                 blockingQueueList.get(i).put(new Message("Master",Message.MessageType.ROUNDSTART,round));
@@ -62,6 +69,7 @@ public class Master {
 
             int i=0;
             while(i<2){
+//            while(!isDone){
 
                 if(takingQueue.size()==config.getNoOfNodes()){
                     while(!takingQueue.isEmpty()){
@@ -86,4 +94,6 @@ public class Master {
             logger.error("Exception in master : ",e);
         }
     }
+
+
 }
