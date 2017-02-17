@@ -107,9 +107,9 @@ public class Client implements Runnable {
 
 
                     this.dist=rcvdMsg.getDist()+edgeWt.get(Integer.valueOf(rcvdMsg.getNodeId())-1);
-                    //TODO Pred
+                    config.getNodes().get(Integer.valueOf(this.nodeId)-1).pred = rcvdMsg.getNodeId();
                     System.out.println("Updated dist : for : "+
-                            this.nodeId+"\t"+this.dist+" : pred:  "+rcvdMsg.getNodeId()+" in round : "+msg.getRoundNumber());
+                            this.nodeId+"\t"+this.dist+" : pred:  "+config.getNodes().get(Integer.valueOf(this.nodeId)-1).getPred()+" in round : "+msg.getRoundNumber());
                 }
 
 

@@ -13,6 +13,7 @@ public class Node {
     Integer numberOfNbrs;
     List<Integer> edgesToNbrs;
     BlockingQueue<Message> rcvQueue;
+    String pred;
 
 
     public Node(String nodeID, List<String> nbrs, Integer numberOfNbrs, List<Integer> edgesToNbrs) {
@@ -21,6 +22,7 @@ public class Node {
         this.numberOfNbrs = numberOfNbrs;
         this.edgesToNbrs = edgesToNbrs;
         rcvQueue = new ArrayBlockingQueue<>(this.numberOfNbrs);
+        this.pred = null;
 
     }
 
@@ -42,6 +44,10 @@ public class Node {
 
     public BlockingQueue<Message> getRcvQueue(){
         return rcvQueue;
+    }
+
+    public String getPred(){
+        return this.pred;
     }
 
 }
