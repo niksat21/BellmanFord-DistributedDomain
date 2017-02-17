@@ -25,6 +25,7 @@ class Slave extends Thread{
         this.setName(name);
         this.barrierPoint=barrierPoint;
         this.start();
+
     }
 
     public void run(){
