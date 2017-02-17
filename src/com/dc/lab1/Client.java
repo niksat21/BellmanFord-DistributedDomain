@@ -91,10 +91,28 @@ public class Client implements Runnable {
 
         for(int i=0;i<config.getNodes().get(Integer.valueOf(this.nodeId)-1).getNumberOfNbrs();i++){
 
+
+            List<Integer> edgeWt = config.getNodes().get(Integer.valueOf(this.nodeId)-1).getEdgesToNbrs();
             try {
                 Message rcvdMsg = temp.take();
                 System.out.println("Node : "+this.nodeId+ " : " +
                         "rcvd : "+" from " + rcvdMsg.getNodeId()+" dist is : "+rcvdMsg.getDist());
+//
+//                distance[u] + w < distance[v]:
+//                distance[v] := distance[u] + w
+//                predecessor[v] := u
+
+                if(rcvdMsg.getDist()!=Integer.MAX_VALUE &&
+                        rcvdMsg.getDist()+edgeWt.get(Integer.valueOf(rcvdMsg.getNodeId())-1)<this.dist){
+
+
+                    this.dist=rcvdMsg.getDist()+edgeWt.get(Integer.valueOf(rcvdMsg.getNodeId())-1);
+                    //TODO Pred
+                    System.out.println("Updated dist : for : "+
+                            this.nodeId+"\t"+this.dist+" : pred:  "+rcvdMsg.getNodeId()+" in round : "+msg.getRoundNumber());
+                }
+
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
