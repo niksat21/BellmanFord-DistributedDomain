@@ -33,17 +33,18 @@ public class clientThread implements Runnable{
 		while(!Master.getEndOperation()){
 			
 			writeLog("Thread round:"+ roundNumber+" Global round:"+Master.getCurrentGlobalRound());
-			System.out.println(nodeId+" round:"+roundNumber+" Global round:"+Master.getCurrentGlobalRound());
+			//System.out.println(nodeId+" round:"+roundNumber+" Global round:"+Master.getCurrentGlobalRound());
 			
 			try {
 				/////BELL MAN FORD PROCESS HERE
-				Message msg = new Message(nodeId,roundNumber);
+				
 				////BLOCKING CALL will wait for master to clear queue
 				
 				while(queueInMaster.size() ==1){
 					Thread.currentThread().sleep(100);
 				}
-				System.out.println(queueInMaster.size()+" node: "+nodeId);
+				writeLog(queueInMaster.size()+" node: "+nodeId + " round: "+roundNumber);
+				Message msg = new Message(nodeId,roundNumber);
 				queueInMaster.put(msg);
 				Thread.currentThread().sleep(1000);
 			} catch (InterruptedException e) {

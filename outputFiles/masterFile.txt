@@ -1,0 +1,5 @@
+1 removed from queue0 at round 0
+2 removed from queue1 at round 1
+3 removed from queue2 at round 1
+4 removed from queue3 at round 1
+5 removed from queue4 at round 1

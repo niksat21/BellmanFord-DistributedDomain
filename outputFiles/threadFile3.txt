@@ -1,0 +1,6 @@
+Thread initialized
+Thread starting
+Thread round:0 Global round:0
+Thread round:1 Global round:0
+0 node: 3 round: 1
+0 node: 3 round: 1
