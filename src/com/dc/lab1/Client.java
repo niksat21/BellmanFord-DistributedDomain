@@ -110,6 +110,11 @@ public class Client implements Runnable {
                     config.getNodes().get(Integer.valueOf(this.nodeId)-1).pred = rcvdMsg.getNodeId();
                     System.out.println("Updated dist : for : "+
                             this.nodeId+"\t"+this.dist+" : pred:  "+config.getNodes().get(Integer.valueOf(this.nodeId)-1).getPred()+" in round : "+msg.getRoundNumber());
+                    Message roundStatusMsg = new Message(this.nodeId, Message.MessageType.DONE,msg.getRoundNumber());
+                    config.getNodes().get(Integer.parseInt(rcvdMsg.getNodeId())-1).getRoundStatus().put(roundStatusMsg);
+                }else{
+                    Message roundStatusMsg = new Message(this.nodeId, Message.MessageType.REJECT,msg.getRoundNumber());
+                    config.getNodes().get(Integer.parseInt(rcvdMsg.getNodeId())-1).getRoundStatus().put(roundStatusMsg);
                 }
 
 

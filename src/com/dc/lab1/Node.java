@@ -13,6 +13,8 @@ public class Node {
     Integer numberOfNbrs;
     List<Integer> edgesToNbrs;
     BlockingQueue<Message> rcvQueue;
+    BlockingQueue<Message> terminationDetectionQueue;
+    BlockingQueue<Message> roundStatus;
     String pred;
 
 
@@ -23,6 +25,8 @@ public class Node {
         this.edgesToNbrs = edgesToNbrs;
         rcvQueue = new ArrayBlockingQueue<>(this.numberOfNbrs);
         this.pred = null;
+        terminationDetectionQueue = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
+        roundStatus = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
 
     }
 
@@ -50,4 +54,11 @@ public class Node {
         return this.pred;
     }
 
+    public BlockingQueue<Message> getTerminationDetectionQueue() {
+        return terminationDetectionQueue;
+    }
+
+    public BlockingQueue<Message> getRoundStatus() {
+        return roundStatus;
+    }
 }
