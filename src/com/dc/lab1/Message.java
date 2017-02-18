@@ -8,7 +8,7 @@ public class Message {
 
     public enum MessageType {
 
-        EXPLORE, DONE, ROUNDSTART, ROUNDEND, REJECT, TERMINATE
+        EXPLORE, DONE, ROUNDSTART, ROUNDEND, REJECT, IGNORE, TERMINATE
     }
 
     private String nodeId ;

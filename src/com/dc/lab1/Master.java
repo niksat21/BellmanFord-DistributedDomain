@@ -68,7 +68,7 @@ public class Master {
 
 
             int i=0;
-            while(i<2){
+            while(i<5){
 //            while(!isDone){
 
                 if(takingQueue.size()==config.getNoOfNodes()){

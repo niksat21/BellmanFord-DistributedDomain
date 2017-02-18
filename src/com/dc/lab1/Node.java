@@ -25,7 +25,7 @@ public class Node {
         this.edgesToNbrs = edgesToNbrs;
         rcvQueue = new ArrayBlockingQueue<>(this.numberOfNbrs);
         this.pred = null;
-        terminationDetectionQueue = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
+        terminationDetectionQueue = new ArrayBlockingQueue<Message>(2*this.numberOfNbrs);
         roundStatus = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
 
     }
