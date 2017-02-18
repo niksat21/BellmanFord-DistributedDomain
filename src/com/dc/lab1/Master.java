@@ -16,7 +16,7 @@ public class Master {
 
     private static Integer nodeId;
     private static Logger logger = LogManager.getLogger(Master.class);
-    public Boolean isDone=false;
+    public static Boolean isDone=false;
     public static void main(String[] args) {
 
         Master master = new Master();
@@ -69,7 +69,7 @@ public class Master {
 
             int i=0;
             while(i<5){
-//            while(!isDone){
+//            while(!Master.getDone()){
 
                 if(takingQueue.size()==config.getNoOfNodes()){
                     while(!takingQueue.isEmpty()){
@@ -95,5 +95,11 @@ public class Master {
         }
     }
 
+    public static  Boolean getDone() {
+        return isDone;
+    }
 
+    public static void setDone(Boolean done) {
+        isDone = done;
+    }
 }
