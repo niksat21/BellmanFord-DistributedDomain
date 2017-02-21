@@ -1,5 +1,7 @@
 package com.dc.lab1;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -16,6 +18,8 @@ public class Node {
     BlockingQueue<Message> terminationDetectionQueue;
     BlockingQueue<Message> roundStatus;
     String pred;
+    HashSet<String> myChildSet;
+    private HashMap<String,adjacencyListObject> myKnowledge;
 
 
     public Node(String nodeID, List<String> nbrs, Integer numberOfNbrs, List<Integer> edgesToNbrs) {
@@ -27,7 +31,8 @@ public class Node {
         this.pred = "unknown";
         terminationDetectionQueue = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
         roundStatus = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
-
+        this.myChildSet = new HashSet<String>();
+        this.myKnowledge = new HashMap<String,adjacencyListObject>();
     }
 
     public String getNodeID() {
@@ -60,5 +65,12 @@ public class Node {
 
     public BlockingQueue<Message> getRoundStatus() {
         return roundStatus;
+    }
+    public HashSet<String> getMyChildSet(){
+    	return myChildSet;
+    }
+    
+    public synchronized HashMap<String,adjacencyListObject> getMyKnowledge(){
+    	return this.myKnowledge;
     }
 }

@@ -15,7 +15,7 @@ import java.util.concurrent.BlockingQueue;
 public class Master {
 
     private static Integer nodeId;
-    private static Logger logger = LogManager.getLogger(Master.class);
+    //private static Logger logger = LogManager.getLogger(Master.class);
     public static Boolean isDone=false;
     public static void main(String[] args) {
 
@@ -62,8 +62,6 @@ public class Master {
                 blockingQueueList.get(i).put(new Message("Master",Message.MessageType.ROUNDSTART,round));
                 System.out.println("starting thread : "+config.getNodes().get(i).getNodeID());
                 new Thread(client).start();
-
-
             }
 
 
@@ -74,11 +72,9 @@ public class Master {
                 if(takingQueue.size()==config.getNoOfNodes()){
                     while(!takingQueue.isEmpty()){
                         Message msg = takingQueue.take();
-                        System.out.println("Master got : End from : "+msg.getNodeId());
-
                     }
                     System.out.println("MAster : round : "+round + "finished");
-                    System.out.println("MAster : starting new round : "+round);
+                    System.out.println("MAster : starting new round : "+round+1);
                     round++;
                     for(BlockingQueue q : blockingQueueList){
 
@@ -91,7 +87,8 @@ public class Master {
             }
 
         }catch (Exception e){
-            logger.error("Exception in master : ",e);
+            //logger.error("Exception in master : ",e);
+        	System.out.println("Exception in master : "+e.getMessage());
         }
     }
 

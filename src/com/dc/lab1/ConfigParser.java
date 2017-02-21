@@ -1,12 +1,11 @@
 package com.dc.lab1;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by niksat21 on 2/12/2017.
@@ -14,7 +13,7 @@ import java.util.*;
 
 public class ConfigParser {
 
-    private static Logger logger = LogManager.getLogger(ConfigParser.class);
+    private static Logger logger = Logger.getLogger(ConfigParser.class.getName());
     private String fileLocation = System.getProperty("config", "conf/config.txt");
     private Config config;
 
@@ -135,7 +134,8 @@ public class ConfigParser {
             System.out.println("leader : " + config2.getLeader());
             List<Node> n = config2.getNodes();
             System.out.println("node id :" + n.get(0).getNodeID());
-            List<Integer> ed = n.get(0).getEdgesToNbrs();
+            System.out.println("Nbrs :" + n.get(0).getNumberOfNbrs());
+            List<String> ed = n.get(0).getNbrs();
             System.out.println("size of nbr: " + ed.size());
             for (int z = 0; z < ed.size(); z++)
                 System.out.println(ed.get(z));
@@ -144,7 +144,7 @@ public class ConfigParser {
             System.out.println(config2.getNodeLocs().get(4).getPort());
             System.out.println("Done");
         } catch (IOException e) {
-            logger.error(e);
+            logger.log(Level.SEVERE, e.getMessage());;
         }
     }
 
