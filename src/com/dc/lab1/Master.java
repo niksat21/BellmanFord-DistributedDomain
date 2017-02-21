@@ -1,8 +1,5 @@
 package com.dc.lab1;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -74,8 +71,9 @@ public class Master {
                         Message msg = takingQueue.take();
                     }
                     System.out.println("MAster : round : "+round + "finished");
-                    System.out.println("MAster : starting new round : "+round+1);
                     round++;
+                    System.out.println("MAster : starting new round : "+round);
+
                     for(BlockingQueue q : blockingQueueList){
 
                         q.put(new Message("Master", Message.MessageType.ROUNDSTART,round));
