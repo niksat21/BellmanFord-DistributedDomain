@@ -1,9 +1,7 @@
 package com.dc.lab1;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -49,8 +47,8 @@ public class Client implements Runnable {
 
 
         this.config = config;
-        this.myNode = config.getNodes().get(Integer.parseInt(this.nodeId)-1);
-        this.myNbrs=config.getNodes().get(Integer.parseInt(this.nodeId)-1).getNbrs();
+        this.myNode = config.getNodes().get(Integer.parseInt(this.nodeId));
+        this.myNbrs=config.getNodes().get(Integer.parseInt(this.nodeId)).getNbrs();
         this.isLeaf = false;
         waitingOnNodes = new HashSet<String>();
         for(int i=0;i<myNbrs.size();i++)
@@ -63,7 +61,7 @@ public class Client implements Runnable {
 
         try {
             int i = 0;
-            while (i < 5) {
+            while (i < 10) {
 	            Message msg = takingQueue.take();
 	            Thread.sleep(100);
 	            clientWorker(msg);
@@ -108,12 +106,12 @@ public class Client implements Runnable {
             	isLeaf = true;
             	readyToterminate =true;
             	adjacencyListObject adjObj = new adjacencyListObject(this.nodeId, myNode.getPred(),this.dist);
-            	config.getNodes().get(Integer.parseInt(myNode.getPred())-1).getMyKnowledge().put(this.nodeId, adjObj);
+            	config.getNodes().get(Integer.parseInt(myNode.getPred())).getMyKnowledge().put(this.nodeId, adjObj);
             	System.out.println("Leaf node detected for node: "+this.nodeId +" at round: "+msg.getRoundNumber()+ " Pred: "+myNode.getPred());
             }
         	else if(waitingOnNodes.size() == 0 && !readyToterminate && !this.isLeader){
         		readyToterminate=true;
-        		Node myPred =config.getNodes().get(Integer.parseInt(myNode.getPred())-1);
+        		Node myPred =config.getNodes().get(Integer.parseInt(myNode.getPred()));
         		for(String key : myNode.getMyKnowledge().keySet()){
         			myPred.getMyKnowledge().put(key, myNode.getMyKnowledge().get(key));
         		}
@@ -139,7 +137,7 @@ public class Client implements Runnable {
 //            System.out.println("putting msg in : from Node : "+this.nodeId+" : in to nbr quueue : "+nbr+ " :dist: "+dist);
             Message msgExplore =
                     new Message(this.nodeId, Message.MessageType.EXPLORE, dist, msg.getRoundNumber());
-            config.getNodes().get(Integer.valueOf(nbr) - 1).getRcvQueue().put(msgExplore);
+            config.getNodes().get(Integer.valueOf(nbr)).getRcvQueue().put(msgExplore);
 
         }
 
@@ -148,7 +146,7 @@ public class Client implements Runnable {
         for (int i = 0; i < myNode.getNumberOfNbrs(); i++) {
             try {
                 Message rcvdMsg = myReceiveQueue.take();
-                Node rcvdNode =config.getNodes().get(Integer.parseInt(rcvdMsg.getNodeId()) - 1);
+                Node rcvdNode =config.getNodes().get(Integer.parseInt(rcvdMsg.getNodeId()));
 //
 //                distance[u] + w < distance[v]:
 //                distance[v] := distance[u] + w
@@ -156,16 +154,16 @@ public class Client implements Runnable {
 
                 String myPred = myNode.getPred().toString();
                 if (rcvdMsg.getDist() != Integer.MAX_VALUE &&
-                        rcvdMsg.getDist() + edgeList.get(Integer.valueOf(rcvdMsg.getNodeId()) - 1) < this.dist) {
+                        rcvdMsg.getDist() + edgeList.get(Integer.valueOf(rcvdMsg.getNodeId())) < this.dist) {
 
 
-                    this.dist = rcvdMsg.getDist() + edgeList.get(Integer.valueOf(rcvdMsg.getNodeId()) - 1);
+                    this.dist = rcvdMsg.getDist() + edgeList.get(Integer.valueOf(rcvdMsg.getNodeId()));
                     myNode.pred = rcvdMsg.getNodeId();
                     rcvdNode.getMyChildSet().add(this.nodeId);
                     if(!myPred.equals(rcvdNode.getNodeID())&& !myPred.equals("unknown"))
-                    	config.getNodes().get(Integer.parseInt(myPred)-1).getMyChildSet().remove(this.nodeId);
+                    	config.getNodes().get(Integer.parseInt(myPred)).getMyChildSet().remove(this.nodeId);
                    System.out.println("Updated dist : for : " +
-                            this.nodeId + "\t" + this.dist + " : pred:  " + config.getNodes().get(Integer.valueOf(this.nodeId) - 1).getPred() + " in round : " + msg.getRoundNumber());
+                            this.nodeId + "\t" + this.dist + " : pred:  " + config.getNodes().get(Integer.valueOf(this.nodeId)).getPred() + " in round : " + msg.getRoundNumber());
 
                     Message roundStatusMsg = new Message(this.nodeId, Message.MessageType.DONE, msg.getRoundNumber());
                     rcvdNode.getRoundStatus().put(roundStatusMsg);

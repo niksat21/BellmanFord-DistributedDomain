@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class ConfigParser {
 
     private static Logger logger = Logger.getLogger(ConfigParser.class.getName());
-    private String fileLocation = System.getProperty("config", "conf/config.txt");
+    private String fileLocation = System.getProperty("config", "conf/configProf.txt");
     private Config config;
 
     public ConfigParser() throws IOException {
@@ -44,35 +44,49 @@ public class ConfigParser {
         noOfNodes = Integer.valueOf(line);
 
         line = getNextLine(iterator);
+
 //        line.replaceAll("\\[","");line.replaceAll("\\]","");
-        String[] temp = line.split("\\,");
+        String[] temp = line.split(" ");
         for (int i = 0; i < noOfNodes; i++) {
             nodeID.add(temp[i]);
+
         }
+
 
 
         line = getNextLine(iterator);
 
-        //
-        for (int i = 0; i < noOfNodes && iterator.hasNext(); line = getNextLine(iterator)) {
+
+        leader = line.trim();
+        line = getNextLine(iterator);
+
+        for (int i = 0; i < noOfNodes ; line = getNextLine(iterator)) {
 
             nbrs = new ArrayList<>();
             edgeToNbrs = new ArrayList<>();
             // Ignore comments
+
             if (line.startsWith("#") || line.isEmpty())
                 continue;
 
-            String[] split = line.split("\\,");
+            String[] split = line.trim().split("\\s+");
+
+
             for (int j = 0; j < noOfNodes; j++) {
+
                 if (Integer.valueOf(split[j]) != -1) {
-                    nbrs.add(nodeID.get(j));
+
+
+                    nbrs.add(nodeID.get(Integer.valueOf(split[j])));
                     edgeToNbrs.add(Integer.valueOf(split[j]));
                 } else {
-                    edgeToNbrs.add(Integer.valueOf(split[j]));
+//                    edgeToNbrs.add(Integer.valueOf(split[j]));
                 }
             }
 
+
             Node node = new Node(nodeID.get(i), nbrs, nbrs.size(), edgeToNbrs);
+
 
             nodes.add(node);
 
@@ -83,22 +97,23 @@ public class ConfigParser {
         }
 
 
-        leader = line.trim();
 
-        line= getNextLine(iterator);
-        for (int i = 0; i < noOfNodes && iterator.hasNext(); line = getNextLine(iterator)) {
-            // Ignore comments
 
-            if (line.startsWith("#") || line.isEmpty())
-                continue;
 
-            String[] split = line.split("\\s+");
-
-            NodeLocation nodeLoc = new NodeLocation(split[0], split[1], Integer.valueOf(split[2]));
-
-            nodeLocations.add(nodeLoc);
-            i++;
-        }
+//        line= getNextLine(iterator);
+//        for (int i = 0; i < noOfNodes && iterator.hasNext(); line = getNextLine(iterator)) {
+//            // Ignore comments
+//
+//            if (line.startsWith("#") || line.isEmpty())
+//                continue;
+//
+//            String[] split = line.split("\\s+");
+//
+//            NodeLocation nodeLoc = new NodeLocation(split[0], split[1], Integer.valueOf(split[2]));
+//
+//            nodeLocations.add(nodeLoc);
+//            i++;
+//        }
 
 
         config = new Config(noOfNodes, nodeID, nodes, weightMatrix, leader,nodeLocations);
@@ -137,11 +152,9 @@ public class ConfigParser {
             System.out.println("Nbrs :" + n.get(0).getNumberOfNbrs());
             List<String> ed = n.get(0).getNbrs();
             System.out.println("size of nbr: " + ed.size());
-            for (int z = 0; z < ed.size(); z++)
-                System.out.println(ed.get(z));
 
-            System.out.println(config2.getNodeLocs().get(0).getHostName());
-            System.out.println(config2.getNodeLocs().get(4).getPort());
+
+            System.out.println("3..............."+config2.getNodes().get(0).getNumberOfNbrs());
             System.out.println("Done");
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.getMessage());;

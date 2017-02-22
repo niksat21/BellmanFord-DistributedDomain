@@ -52,6 +52,7 @@ public class Master {
             System.out.println("MAster : starting new round : "+round);
             for(int i=0;i<config.getNoOfNodes();i++){
 
+
                 blockingQueueList.add(new ArrayBlockingQueue<Message>(1));
                 Client client  = new Client(config,config.getNodes().get(i).getNodeID(),
                         config.getLeader(),config.getNodes().get(i).getEdgesToNbrs(),
@@ -63,7 +64,7 @@ public class Master {
 
 
             int i=0;
-            while(i<5){
+            while(i<10){
 //            while(!Master.getDone()){
 
                 if(takingQueue.size()==config.getNoOfNodes()){
@@ -86,6 +87,7 @@ public class Master {
 
         }catch (Exception e){
             //logger.error("Exception in master : ",e);
+            e.printStackTrace();
         	System.out.println("Exception in master : "+e.getMessage());
         }
     }
