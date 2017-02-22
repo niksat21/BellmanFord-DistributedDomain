@@ -134,7 +134,8 @@ public class ConfigParser {
             System.out.println("leader : " + config2.getLeader());
             List<Node> n = config2.getNodes();
             System.out.println("node id :" + n.get(0).getNodeID());
-            List<Integer> ed = n.get(0).getEdgesToNbrs();
+            System.out.println("Nbrs :" + n.get(0).getNumberOfNbrs());
+            List<String> ed = n.get(0).getNbrs();
             System.out.println("size of nbr: " + ed.size());
             for (int z = 0; z < ed.size(); z++)
                 System.out.println(ed.get(z));

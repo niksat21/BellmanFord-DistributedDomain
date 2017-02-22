@@ -1,22 +1,13 @@
 package com.dc.lab1;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.InetAddress;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.BlockingQueue;
 
 
 /**
@@ -24,70 +15,32 @@ import java.util.logging.Logger;
  */
 public class Master {
 
-    
-    private static Logger logger = Logger.getLogger(Master.class.getName());
-    //This will be the synchronizer class that will define the rounds for each of the threads
-    //that act as nodes.
-    
-    private static int numberOfNodes;
-    private static List<Node> nodeList;
-    private static int numberOfRounds;
-    private static volatile int currentRound;
-    private static volatile boolean endOperation;
-    
-    private static volatile CopyOnWriteArrayList<ArrayBlockingQueue<Message>>messageQueues;
-    
-    public static void main(String[] args){
+    private static Integer nodeId;
+    //private static Logger logger = LogManager.getLogger(Master.class);
+    public static Boolean isDone=false;
+    private HashSet<Integer> deadNodes;
+    private Boolean killMaster = false;
+    public static void main(String[] args) {
+
+        Master master = new Master();
+        master.masterWorker();
+    }
+
+    public void masterWorker(){
 
         try{
 
             ConfigParser parser = new ConfigParser();
             Config config = parser.getConfig();
-            numberOfRounds=10;
-            currentRound=0;
-            endOperation=false;
-            //nodeId=Integer.valueOf(System.getProperty("nodeId"));
-            //String hostname = InetAddress.getLocalHost().getHostName();
-
-            logger.info("Round Synchronizer started");
-            numberOfNodes = config.getNoOfNodes();
-            nodeList = new ArrayList<Node>();
-            nodeList = config.getNodes();
-            messageQueues = new CopyOnWriteArrayList<ArrayBlockingQueue<Message>>();
-            
-            
-            
-            
-            for(int i=0;i<numberOfNodes;i++){
-            	
-            	Node node = nodeList.get(i);
-            	messageQueues.add(new ArrayBlockingQueue<Message>(1));
-            	clientThread client = new clientThread(node.getNodeID(),node.nbrs,node.getEdgesToNbrs(),messageQueues.get(i));
-            	Thread thread = new Thread(client);
-            	thread.setName("thread"+node.getNodeID());
-            	thread.start();
-            	System.out.println(node.getNodeID()+" Thread Started");
-            	Thread.currentThread().sleep(1000);
-            }
-            
-            System.out.println("--------------");
-            
-            while(currentRound<numberOfRounds){
-            	System.out.println(currentRound+" Round Started in Master");
-            	
-            	while(!checkQueues()){
-            		Thread.currentThread().sleep(5);
-            		//System.out.println("wait here");
-            	}
-            	
-            	System.out.println("Wait for next round");
-            	Thread.currentThread().sleep(2000);
-            	
-            	clearQueues();
-            	currentRound++;
-            }
-            endOperation=true;
-
+            deadNodes = new HashSet<Integer>();
+//
+//            nodeId=Integer.valueOf(System.getProperty("nodeId"));
+//            String hostname = InetAddress.getLocalHost().getHostName();
+//
+//            logger.info("NodeID:{} Hostname:{}",nodeId,hostname);
+//
+//            Node node = config.getNodes().get(nodeId);
+//            NodeLocation nodeLoc =config.getNodeLocs().get(nodeId);
 
 
 //            TODO
@@ -98,59 +51,69 @@ public class Master {
 
 //            Thread clientThread = new Thread(client, "client-thread");
 //            Thread serverThread = new Thread(server, "server-thread");
-//
 
+
+            List<BlockingQueue<Message>> blockingQueueList = new ArrayList<>();
+            BlockingQueue<Message> takingQueue = new ArrayBlockingQueue<>(config.getNoOfNodes());
+            Integer round =0;
+            System.out.println("MAster : starting new round : "+round);
+            for(int i=0;i<config.getNoOfNodes();i++){
+
+                blockingQueueList.add(new ArrayBlockingQueue<Message>(1));
+                Client client  = new Client(config,config.getNodes().get(i).getNodeID(),
+                        config.getLeader(),config.getNodes().get(i).getEdgesToNbrs(),
+                        blockingQueueList.get(i),takingQueue);
+                blockingQueueList.get(i).put(new Message("Master",Message.MessageType.ROUNDSTART,round));
+                System.out.println("starting thread : "+config.getNodes().get(i).getNodeID());
+                new Thread(client).start();
+            }
+
+
+            int i=0;
+            while(!this.killMaster){
+//            while(!Master.getDone()){
+
+                //if(takingQueue.size()>0){
+                    while(!takingQueue.isEmpty()){
+                        Message msg = takingQueue.take();
+                        if(msg.getMsgType().toString().equals("KILL")){
+                        	deadNodes.add(Integer.parseInt(msg.getNodeId())-1);
+                        	System.out.println("DeAD: "+msg.getNodeId());
+                        	killMaster =Boolean.TRUE;
+                        }
+                    }
+                    System.out.println("MAster : round : "+round + "finished");
+                    System.out.println("MAster : starting new round : "+(round+1));
+                    round++;
+                    if(!killMaster){
+                    	for(BlockingQueue q : blockingQueueList){		
+                            q.put(new Message("Master", Message.MessageType.ROUNDSTART,round));
+                        }
+                    }
+                    else{
+                    	for(int j=0;j<blockingQueueList.size();j++){
+                        	if(!deadNodes.contains(j)){
+                        		blockingQueueList.get(j).put(new Message("Master", Message.MessageType.KILL,round));
+                        	}
+                        }
+                    	System.out.println("Master killed");
+                    }
+                    
+                    i++;
+                //}
+            }
 
         }catch (Exception e){
-            logger.log(Level.SEVERE, "Exception in master : "+e);
+            //logger.error("Exception in master : ",e);
+        	System.out.println("Exception in master : "+e.getMessage());
         }
     }
-    
-    private static synchronized boolean checkQueues(){
-    	for(int i=0;i<messageQueues.size();i++){
-    		if(messageQueues.get(Integer.valueOf(nodeList.get(i).getNodeID())-1).size()==0)
-    			return false;
-    	}
-    	return true;
-    }
-    
-    private static synchronized void clearQueues(){
-    	for(int i=0;i<nodeList.size();i++){
-    		try {
-				Message remove = messageQueues.get(Integer.valueOf(nodeList.get(i).getNodeID())-1).take();
-				writeLog(remove.getNodeId()+" removed from queue"+i +" at round "+remove.getRound());
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
+
+    public static  Boolean getDone() {
+        return isDone;
     }
 
-    public static synchronized int getCurrentGlobalRound(){
-    	return currentRound;
+    public static void setDone(Boolean done) {
+        isDone = done;
     }
-
-    public static synchronized boolean getEndOperation(){
-    	return endOperation;
-    }
-    
-    private static void writeLog(String msg) {
-		Writer writer;
-		try {
-			FileOutputStream FoutStream = new FileOutputStream(
-					"outputFiles/masterFile.txt", true);
-			try {
-				writer = new BufferedWriter(
-						new OutputStreamWriter(FoutStream, "UTF-8"));
-				writer.append(msg);
-				writer.append("\n");
-				writer.close();
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			} finally {
-				FoutStream.close();
-			}
-		} catch (Exception e) {
-		}
-	}
 }
