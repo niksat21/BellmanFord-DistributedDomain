@@ -47,7 +47,9 @@ public class Master {
 
 
             List<BlockingQueue<Message>> blockingQueueList = new ArrayList<>();
+
             BlockingQueue<Message> takingQueue = new ArrayBlockingQueue<>(config.getNoOfNodes());
+
             Integer round =0;
             System.out.println("MAster : starting new round : "+round);
             for(int i=0;i<config.getNoOfNodes();i++){
@@ -58,7 +60,7 @@ public class Master {
                         config.getLeader(),config.getNodes().get(i).getEdgesToNbrs(),
                         blockingQueueList.get(i),takingQueue);
                 blockingQueueList.get(i).put(new Message("Master",Message.MessageType.ROUNDSTART,round));
-                System.out.println("starting thread : "+config.getNodes().get(i).getNodeID());
+//                System.out.println("starting thread : "+config.getNodes().get(i).getNodeID());
                 new Thread(client).start();
             }
 

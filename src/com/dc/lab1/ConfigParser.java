@@ -77,10 +77,10 @@ public class ConfigParser {
                 if (Integer.valueOf(split[j]) != -1) {
 
 
-                    nbrs.add(nodeID.get(Integer.valueOf(split[j])));
+                    nbrs.add(nodeID.get(j));
                     edgeToNbrs.add(Integer.valueOf(split[j]));
                 } else {
-//                    edgeToNbrs.add(Integer.valueOf(split[j]));
+                    edgeToNbrs.add(Integer.valueOf(split[j]));
                 }
             }
 

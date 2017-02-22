@@ -63,7 +63,8 @@ public class Client implements Runnable {
             int i = 0;
             while (i < 10) {
 	            Message msg = takingQueue.take();
-	            Thread.sleep(100);
+
+                Thread.sleep(100);
 	            clientWorker(msg);
                checkRoundStatus(msg);
                if(readyToterminate && this.isLeader){
@@ -134,6 +135,7 @@ public class Client implements Runnable {
         //send dist to ur nbrs
         for (String nbr : myNbrs) {
 
+
 //            System.out.println("putting msg in : from Node : "+this.nodeId+" : in to nbr quueue : "+nbr+ " :dist: "+dist);
             Message msgExplore =
                     new Message(this.nodeId, Message.MessageType.EXPLORE, dist, msg.getRoundNumber());
@@ -146,6 +148,7 @@ public class Client implements Runnable {
         for (int i = 0; i < myNode.getNumberOfNbrs(); i++) {
             try {
                 Message rcvdMsg = myReceiveQueue.take();
+
                 Node rcvdNode =config.getNodes().get(Integer.parseInt(rcvdMsg.getNodeId()));
 //
 //                distance[u] + w < distance[v]:
