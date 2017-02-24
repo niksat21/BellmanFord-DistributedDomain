@@ -10,52 +10,52 @@ import java.util.concurrent.BlockingQueue;
  * Created by niksat21 on 2/12/2017.
  */
 public class Node {
-    String nodeID;
-    List<String> nbrs;
-    Integer numberOfNbrs;
-    List<Integer> edgesToNbrs;
-    BlockingQueue<Message> rcvQueue;
-    BlockingQueue<Message> terminationDetectionQueue;
-    BlockingQueue<Message> roundStatus;
+    private String nodeID;
+    private List<String> nbrs;
+    private Integer numberOfNbrs;
+    private List<Integer> edgesToNbrs;
+    private BlockingQueue<Message> rcvQueue;
+    private BlockingQueue<Message> terminationDetectionQueue;
+    private BlockingQueue<Message> roundStatus;
     String pred;
-    HashSet<String> myChildSet;
+    private HashSet<String> myChildSet;
     private HashMap<String,adjacencyListObject> myKnowledge;
+    Boolean doneFlag=Boolean.FALSE;
 
-
-    public Node(String nodeID, List<String> nbrs, Integer numberOfNbrs, List<Integer> edgesToNbrs) {
+    Node(String nodeID, List<String> nbrs, Integer numberOfNbrs, List<Integer> edgesToNbrs) {
         this.nodeID = nodeID;
         this.nbrs = nbrs;
         this.numberOfNbrs = numberOfNbrs;
         this.edgesToNbrs = edgesToNbrs;
         rcvQueue = new ArrayBlockingQueue<>(this.numberOfNbrs);
         this.pred = "unknown";
-        terminationDetectionQueue = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
-        roundStatus = new ArrayBlockingQueue<Message>(this.numberOfNbrs);
-        this.myChildSet = new HashSet<String>();
-        this.myKnowledge = new HashMap<String,adjacencyListObject>();
+        terminationDetectionQueue = new ArrayBlockingQueue<>(this.numberOfNbrs);
+        roundStatus = new ArrayBlockingQueue<>(this.numberOfNbrs);
+        this.myChildSet = new HashSet<>();
+        this.myKnowledge = new HashMap<>();
     }
 
-    public String getNodeID() {
+    String getNodeID() {
         return nodeID;
     }
 
-    public List<String> getNbrs() {
+    List<String> getNbrs() {
         return nbrs;
     }
 
-    public Integer getNumberOfNbrs() {
+    Integer getNumberOfNbrs() {
         return numberOfNbrs;
     }
 
-    public List<Integer> getEdgesToNbrs() {
+    List<Integer> getEdgesToNbrs() {
         return edgesToNbrs;
     }
 
-    public BlockingQueue<Message> getRcvQueue(){
+    BlockingQueue<Message> getRcvQueue(){
         return rcvQueue;
     }
 
-    public String getPred(){
+    String getPred(){
         return this.pred;
     }
 
@@ -63,14 +63,32 @@ public class Node {
         return terminationDetectionQueue;
     }
 
-    public BlockingQueue<Message> getRoundStatus() {
+    BlockingQueue<Message> getRoundStatus() {
         return roundStatus;
     }
-    public HashSet<String> getMyChildSet(){
-    	return myChildSet;
+
+    HashSet<String> getMyChildSet(){
+        synchronized(this){
+            return myChildSet;
+        }
+
+    }
+
+    void addToChildSet(String nodeId){
+        synchronized (this){
+            this.myChildSet.add(nodeId);
+        }
+    }
+
+    void removeFromChildSet(String nodeId){
+        synchronized (this){
+            this.myChildSet.remove(nodeId);
+        }
     }
     
-    public synchronized HashMap<String,adjacencyListObject> getMyKnowledge(){
-    	return this.myKnowledge;
+    HashMap<String,adjacencyListObject> getMyKnowledge(){
+        synchronized(this){
+            return this.myKnowledge;
+        }
     }
 }
