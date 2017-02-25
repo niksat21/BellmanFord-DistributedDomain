@@ -66,7 +66,7 @@ public class Client implements Runnable {
 	            Message msg = takingQueue.take();
                 if(msg.getMsgType().toString().equals("KILL")){
 
-                    loopStopFlag=Boolean.TRUE;
+                    this.loopStopFlag=Boolean.TRUE;
                     System.out.println("ending node in next round : "+this.nodeId);
 //                    config.getNodes().get(Integer.parseInt(this.nodeId)).getRcvQueue().clear();
 //                    config.getNodes().get(Integer.parseInt(this.nodeId)).getRoundStatus().clear();
@@ -176,6 +176,8 @@ public class Client implements Runnable {
             }
 
         }
+        if(this.killFlag)
+            this.loopStopFlag=Boolean.TRUE;
 
         BlockingQueue<Message> myReceiveQueue = myNode.getRcvQueue();
 
@@ -186,7 +188,9 @@ public class Client implements Runnable {
                 if(rcvdMsg.getMsgType().toString().equals("KILL")){
                     System.out.println("killed : "+this.nodeId);
                     this.killFlag=Boolean.TRUE;
+
                     terminationQueueFromMaster.add(this.nodeId);
+//                    this.loopStopFlag=Boolean.TRUE;
                 }
                 Node rcvdNode = config.getNodes().get(Integer.parseInt(rcvdMsg.getNodeId()));
 //
