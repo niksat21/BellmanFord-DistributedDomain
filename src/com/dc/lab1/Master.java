@@ -1,6 +1,7 @@
 package com.dc.lab1;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -13,7 +14,8 @@ public class Master {
 
     private static Integer nodeId;
     //private static Logger logger = LogManager.getLogger(Master.class);
-    public static Boolean isDone = false;
+    private static Boolean isDone = false;
+    private HashSet<String> terminationQueue;
 
     public static void main(String[] args) {
 
@@ -27,6 +29,7 @@ public class Master {
 
             ConfigParser parser = new ConfigParser();
             Config config = parser.getConfig();
+            this.terminationQueue = new HashSet<String>();
 //
 //            nodeId=Integer.valueOf(System.getProperty("nodeId"));
 //            String hostname = InetAddress.getLocalHost().getHostName();
@@ -52,14 +55,14 @@ public class Master {
             BlockingQueue<Message> takingQueue = new ArrayBlockingQueue<>(config.getNoOfNodes());
 
             Integer round = 0;
-            System.out.println("MAster : starting new round : " + round);
+            System.out.println("Master : starting new round : " + round);
             for (int i = 0; i < config.getNoOfNodes(); i++) {
 
 
                 blockingQueueList.add(new ArrayBlockingQueue<Message>(1));
                 Client client = new Client(config, config.getNodes().get(i).getNodeID(),
                         config.getLeader(), config.getNodes().get(i).getEdgesToNbrs(),
-                        blockingQueueList.get(i), takingQueue);
+                        blockingQueueList.get(i), takingQueue, terminationQueue);
                 blockingQueueList.get(i).put(new Message("Master", Message.MessageType.ROUNDSTART, round));
 //                System.out.println("starting thread : "+config.getNodes().get(i).getNodeID());
                 new Thread(client).start();
@@ -67,36 +70,54 @@ public class Master {
 
 
             int i = 0;
-//            while(i<10){
-            while (!Master.getDone()) {
-
+            while(!isDone){
+//            while (!Master.getDone()) {
+                if(terminationQueue.size()== config.getNoOfNodes()){
+                    System.out.println("KILL by all in round: "+round);
+                    isDone= Boolean.TRUE;
+                }
                 if (takingQueue.size() == config.getNoOfNodes()) {
+                    System.out.println("1..............."+round);
                     while (!takingQueue.isEmpty()) {
                         Message msg = takingQueue.take();
                     }
                     System.out.println("MAster : round : " + round + "finished");
                     round++;
                     System.out.println("MAster : starting new round : " + round);
+                    if(isDone){
+                        System.out.println("came inside isdone in master");
+                        for (int z=0;z<blockingQueueList.size();z++) {
+                            BlockingQueue q = blockingQueueList.get(z);
+                            if(z==(Integer.parseInt(config.getLeader())))
+                                q.put(new Message("Master", Message.MessageType.KILL, round));
+                            else{
+                                System.out.println("master sending kill to leader: ");
+                                q.put(new Message("Master", Message.MessageType.EXPLORE, round));
+                            }
 
-                    for (BlockingQueue q : blockingQueueList) {
+                        }
 
-                        q.put(new Message("Master", Message.MessageType.ROUNDSTART, round));
+
+
+                    }else{
+                        for (BlockingQueue q : blockingQueueList) {
+                            q.put(new Message("Master", Message.MessageType.ROUNDSTART, round));
+                        }
                     }
+
                     i++;
 
                 }
 
             }
-            for (int k = 0; k < config.getNoOfNodes(); k++) {
-                config.getNodes().get(k).doneFlag=Boolean.TRUE;
 
-            }
 
         } catch (Exception e) {
             //logger.error("Exception in master : ",e);
             e.printStackTrace();
             System.out.println("Exception in master : " + e.getMessage());
         }
+        System.out.println("master exiting");
     }
 
     public static Boolean getDone() {
@@ -105,5 +126,12 @@ public class Master {
 
     public static void setDone(Boolean done) {
         isDone = done;
+    }
+
+    public void addToHashSet(String nodeId){
+        synchronized (this){
+            if(!terminationQueue.contains(nodeId))
+                terminationQueue.add(nodeId);
+        }
     }
 }

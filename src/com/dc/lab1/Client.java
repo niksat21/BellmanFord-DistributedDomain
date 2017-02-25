@@ -12,7 +12,7 @@ public class Client implements Runnable {
 //            config.getLeader(),config.getNodes().get(i).getEdgesToNbrs()
 //            ,new ArrayBlockingQueue<MessageType>(1).put(MessageType.ROUNDSTART),
 //            takingQueue);
-
+    private Boolean loopStopFlag = Boolean.FALSE;
     private String nodeId;
     private List<Integer> edgeList;
     private BlockingQueue<Message> takingQueue;
@@ -20,17 +20,18 @@ public class Client implements Runnable {
     private Boolean isLeader = false;
     private Integer dist;
     private Boolean readyToterminate=Boolean.FALSE;
-
+    private Boolean killFlag = Boolean.FALSE;
     private Config config;
     private Node myNode;
     private List<String> myNbrs;
     private boolean isLeaf;
     private HashSet<String> waitingOnNodes;
     private int rejectCounter, ignoreCounter, doneCounter;
+    private HashSet<String> terminationQueueFromMaster;
 
     Client(Config config, String nodeId, String leader, List<Integer> edgeList,
            BlockingQueue<Message> takingQueue,
-           BlockingQueue<Message> puttingQueue) {
+           BlockingQueue<Message> puttingQueue, HashSet<String> terminationQueue) {
         this.nodeId = nodeId;
         this.edgeList = edgeList;
         this.takingQueue = takingQueue;
@@ -49,6 +50,7 @@ public class Client implements Runnable {
         this.myNode = config.getNodes().get(Integer.parseInt(this.nodeId));
         this.myNbrs=config.getNodes().get(Integer.parseInt(this.nodeId)).getNbrs();
         this.isLeaf = false;
+        this.terminationQueueFromMaster = terminationQueue;
         waitingOnNodes = new HashSet<>();
         for (String myNbr : myNbrs) waitingOnNodes.add(myNbr);
     }
@@ -59,30 +61,46 @@ public class Client implements Runnable {
 
         try {
             int i = 0;
-            while (i < 12) {
+            while (!loopStopFlag) {
 //            while(!config.getNodes().get(Integer.parseInt(this.nodeId)).doneFlag){
 	            Message msg = takingQueue.take();
+                if(msg.getMsgType().toString().equals("KILL")){
+
+                    loopStopFlag=Boolean.TRUE;
+                    System.out.println("ending node in next round : "+this.nodeId);
+//                    config.getNodes().get(Integer.parseInt(this.nodeId)).getRcvQueue().clear();
+//                    config.getNodes().get(Integer.parseInt(this.nodeId)).getRoundStatus().clear();
+//                    config.getNodes().get(Integer.parseInt(this.nodeId)).getTerminationDetectionQueue().clear();
+
+
+                }
+
 
                 Thread.sleep(100);
 	            clientWorker(msg);
                checkRoundStatus(msg);
-               if(readyToterminate && this.isLeader){
+               if(readyToterminate && this.isLeader  && !this.loopStopFlag && !this.killFlag){
             	   System.out.println("FINAL ADJACENCY LIST:");
             	   for(String key: myNode.getMyKnowledge().keySet()){
             		   adjacencyListObject adjObj = myNode.getMyKnowledge().get(key);
             		   System.out.println("Node: "+key+" Pred: "+adjObj.getpred()+" Dist: "+adjObj.getDist());
-            		   Master.isDone=Boolean.TRUE;
+            		   //Master.isDone=Boolean.TRUE;
             	   }
+                   this.killFlag =Boolean.TRUE;
+                   System.out.println("killing leader : ");
+                   terminationQueueFromMaster.add(this.nodeId);
                }
                 puttingQueue.put(new Message(this.nodeId, Message.MessageType.ROUNDEND, msg.getRoundNumber()));
                 i++;
                 rejectCounter =0;
                 doneCounter=0;
                 ignoreCounter=0;
+
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println(this.nodeId+ " exiting");
     }
     
     
@@ -145,9 +163,17 @@ public class Client implements Runnable {
 
 
 //            System.out.println("putting msg in : from Node : "+this.nodeId+" : in to nbr quueue : "+nbr+ " :dist: "+dist);
-            Message msgExplore =
-                    new Message(this.nodeId, Message.MessageType.EXPLORE, dist, msg.getRoundNumber());
-            config.getNodes().get(Integer.valueOf(nbr)).getRcvQueue().put(msgExplore);
+
+            if(myNode.getMyChildSet().contains(nbr) && this.killFlag){
+                System.out.println(this.nodeId+ " sending kill to child : "+nbr);
+                Message msgExplore =
+                        new Message(this.nodeId, Message.MessageType.KILL, dist, msg.getRoundNumber());
+                config.getNodes().get(Integer.valueOf(nbr)).getRcvQueue().put(msgExplore);
+            }else{
+                Message msgExplore =
+                        new Message(this.nodeId, Message.MessageType.EXPLORE, dist, msg.getRoundNumber());
+                config.getNodes().get(Integer.valueOf(nbr)).getRcvQueue().put(msgExplore);
+            }
 
         }
 
@@ -157,6 +183,11 @@ public class Client implements Runnable {
             try {
                 Message rcvdMsg = myReceiveQueue.take();
 
+                if(rcvdMsg.getMsgType().toString().equals("KILL")){
+                    System.out.println("killed : "+this.nodeId);
+                    this.killFlag=Boolean.TRUE;
+                    terminationQueueFromMaster.add(this.nodeId);
+                }
                 Node rcvdNode = config.getNodes().get(Integer.parseInt(rcvdMsg.getNodeId()));
 //
 //                distance[u] + w < distance[v]:
