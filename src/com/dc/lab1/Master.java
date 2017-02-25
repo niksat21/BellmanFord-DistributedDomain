@@ -86,19 +86,11 @@ public class Master {
                     System.out.println("MAster : starting new round : " + round);
                     if(isDone){
                         System.out.println("came inside isdone in master");
-                        for (int z=0;z<blockingQueueList.size();z++) {
-                            BlockingQueue q = blockingQueueList.get(z);
-                            if(z==(Integer.parseInt(config.getLeader())))
+                        for (BlockingQueue q : blockingQueueList) {
+
                                 q.put(new Message("Master", Message.MessageType.KILL, round));
-                            else{
-                                System.out.println("master sending kill to leader: ");
-                                q.put(new Message("Master", Message.MessageType.EXPLORE, round));
-                            }
 
                         }
-
-
-
                     }else{
                         for (BlockingQueue q : blockingQueueList) {
                             q.put(new Message("Master", Message.MessageType.ROUNDSTART, round));
@@ -109,10 +101,11 @@ public class Master {
 
                 }
 
-            }
+
+        }
 
 
-        } catch (Exception e) {
+    } catch (Exception e) {
             //logger.error("Exception in master : ",e);
             e.printStackTrace();
             System.out.println("Exception in master : " + e.getMessage());
