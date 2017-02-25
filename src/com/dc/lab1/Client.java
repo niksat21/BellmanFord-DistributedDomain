@@ -79,7 +79,7 @@ public class Client implements Runnable {
                 Thread.sleep(100);
 	            clientWorker(msg);
                checkRoundStatus(msg);
-               if(readyToterminate && this.isLeader  && !this.loopStopFlag && !this.killFlag){
+               if(readyToterminate && this.isLeader && !this.killFlag){
             	   System.out.println("FINAL ADJACENCY LIST:");
             	   for(String key: myNode.getMyKnowledge().keySet()){
             		   adjacencyListObject adjObj = myNode.getMyKnowledge().get(key);
@@ -176,8 +176,6 @@ public class Client implements Runnable {
             }
 
         }
-        if(this.killFlag)
-            this.loopStopFlag=Boolean.TRUE;
 
         BlockingQueue<Message> myReceiveQueue = myNode.getRcvQueue();
 
