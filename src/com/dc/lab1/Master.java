@@ -17,13 +17,13 @@ public class Master {
     private static Boolean isDone = false;
     private HashSet<String> terminationQueue;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         Master master = new Master();
         master.masterWorker();
     }
 
-    public void masterWorker() {
+    public void masterWorker() throws InterruptedException {
 
         try {
 
@@ -75,34 +75,39 @@ public class Master {
                 if(terminationQueue.size()== config.getNoOfNodes()){
                     System.out.println("KILL by all in round: "+round);
                     isDone= Boolean.TRUE;
-                }
-                if (takingQueue.size() == config.getNoOfNodes()) {
-                    System.out.println("1..............."+round);
-                    while (!takingQueue.isEmpty()) {
-                        Message msg = takingQueue.take();
-                    }
-                    System.out.println("MAster : round : " + round + "finished");
-                    round++;
-                    System.out.println("MAster : starting new round : " + round);
                     if(isDone){
                         System.out.println("came inside isdone in master");
                         for (BlockingQueue q : blockingQueueList) {
 
-                                q.put(new Message("Master", Message.MessageType.KILL, round));
+                            q.put(new Message("Master", Message.MessageType.KILL, round));
 
                         }
-                    }else{
+
+                    }
+                }
+                if(!isDone){
+                    if (takingQueue.size() == config.getNoOfNodes()) {
+                        System.out.println("1..............."+round);
+                        while (!takingQueue.isEmpty()) {
+                            Message msg = takingQueue.take();
+                        }
+                        System.out.println("MAster : round : " + round + "finished");
+                        round++;
+                        System.out.println("MAster : starting new round : " + round);
+
                         for (BlockingQueue q : blockingQueueList) {
                             q.put(new Message("Master", Message.MessageType.ROUNDSTART, round));
                         }
+
+
+                        i++;
+
                     }
 
-                    i++;
 
                 }
+                }
 
-
-        }
 
 
     } catch (Exception e) {
@@ -110,7 +115,8 @@ public class Master {
             e.printStackTrace();
             System.out.println("Exception in master : " + e.getMessage());
         }
-        System.out.println("master exiting");
+        System.out.println("master exiting : "+isDone);
+//        Thread.sleep(2000);
     }
 
     public static Boolean getDone() {

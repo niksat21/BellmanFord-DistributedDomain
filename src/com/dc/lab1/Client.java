@@ -76,7 +76,7 @@ public class Client implements Runnable {
                 }
 
 
-                Thread.sleep(100);
+//                Thread.sleep(100);
 	            clientWorker(msg);
                checkRoundStatus(msg);
                if(readyToterminate && this.isLeader && !this.killFlag){
@@ -90,7 +90,12 @@ public class Client implements Runnable {
                    System.out.println("killing leader : ");
                    terminationQueueFromMaster.add(this.nodeId);
                }
-                puttingQueue.put(new Message(this.nodeId, Message.MessageType.ROUNDEND, msg.getRoundNumber()));
+               synchronized (this){
+
+                   if(!Master.getDone())
+                    puttingQueue.put(new Message(this.nodeId, Message.MessageType.ROUNDEND, msg.getRoundNumber()));
+               }
+
                 i++;
                 rejectCounter =0;
                 doneCounter=0;
